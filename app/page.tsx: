@@ -2,40 +2,12 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { deleteListing } from "@/app/actions";
 
-const CATEGORY_LABELS: Record<string, string> = {
-  ALL: "Alle",
-  POWER_TUBES: "Endröhren",
-  PREAMP_TUBES: "Vorstufen",
-  GUITAR_AMPS: "Gitarrenamps",
-  HIFI_AMPS: "HiFi-Amps",
-  OTHER: "Sonstiges",
-};
-
-const CATEGORY_ORDER = ["ALL", "POWER_TUBES", "PREAMP_TUBES", "GUITAR_AMPS", "HIFI_AMPS", "OTHER"] as const;
-
-function isValidCategory(value: string | undefined) {
-  if (!value) return false;
-  return value in CATEGORY_LABELS && value !== "ALL";
-}
-
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string }>;
-}) {
-  const { category } = await searchParams;
-  const activeCategory = category ?? "ALL";
-
+export default async function Home() {
   const year = new Date().getFullYear();
 
-  const where = isValidCategory(activeCategory)
-    ? { category: activeCategory as any }
-    : undefined;
-
   const listings = await prisma.listing.findMany({
-    where,
     orderBy: { createdAt: "desc" },
-    take: 20,
+    take: 10,
   });
 
   return (
@@ -102,8 +74,7 @@ export default async function Home({
 
           <div className="hero-footer">
             <div>
-              Filter aktiv:{" "}
-              <strong>{CATEGORY_LABELS[activeCategory] ?? "Alle"}</strong>
+              Schon <strong>echte Anzeigen</strong> – wird live aus SQLite geladen.
             </div>
             <div className="hero-footer-right">
               <div style={{ display: "flex", gap: 3 }}>
@@ -111,7 +82,7 @@ export default async function Home({
                 <div className="signal-bar"></div>
                 <div className="signal-bar"></div>
               </div>
-              <span>{listings.length} Treffer</span>
+              <span>Community im Aufbau</span>
             </div>
           </div>
         </section>
@@ -124,26 +95,23 @@ export default async function Home({
               <div className="card-tag">live</div>
             </div>
 
-            {/* FILTERS (jetzt echte Links) */}
+            {/* (Filter-Chips sind noch Demo; machen wir als nächsten Schritt funktionsfähig) */}
             <div className="mini-filters">
-              {CATEGORY_ORDER.map((key) => {
-                const isActive =
-                  (key === "ALL" && (activeCategory === "ALL" || !isValidCategory(activeCategory))) ||
-                  key === activeCategory;
-
-                const href = key === "ALL" ? "/#angebote" : `/?category=${key}#angebote`;
-
-                return (
-                  <Link
-                    key={key}
-                    href={href}
-                    className={`chip${isActive ? " active" : ""}`}
-                    scroll={false}
-                  >
-                    {CATEGORY_LABELS[key]}
-                  </Link>
-                );
-              })}
+              <button className="chip active" type="button">
+                Alle
+              </button>
+              <button className="chip" type="button">
+                Endröhren
+              </button>
+              <button className="chip" type="button">
+                Vorstufen
+              </button>
+              <button className="chip" type="button">
+                Gitarrenamps
+              </button>
+              <button className="chip" type="button">
+                HiFi-Amps
+              </button>
             </div>
 
             <div className="listing-list">
@@ -158,10 +126,7 @@ export default async function Home({
                     <div className={`listing-label ${labelClass}`}>{labelText}</div>
 
                     <div className="listing-main">
-                      <div className="listing-title">
-                        <Link href={`/listing/${l.id}`}>{l.title}</Link>
-                      </div>
-
+                      <div className="listing-title">{l.title}</div>
 
                       <div className="listing-meta">
                         {l.brand && (
@@ -194,7 +159,9 @@ export default async function Home({
                             ● <span>{l.status}</span>
                           </div>
                         ) : (
-                          <div className="badge-condition">Zustand: {l.condition ?? "—"}</div>
+                          <div className="badge-condition">
+                            Zustand: {l.condition ?? "—"}
+                          </div>
                         )}
                       </div>
 
@@ -213,10 +180,11 @@ export default async function Home({
                 <article className="listing">
                   <div className="listing-label search">Info</div>
                   <div className="listing-main">
-                    <div className="listing-title">Keine Treffer für diesen Filter.</div>
+                    <div className="listing-title">Noch keine echten Anzeigen.</div>
                     <div className="listing-meta">
                       <span>
-                        <span className="dot"></span> Filter wechseln oder neue Anzeige erstellen.
+                        <span className="dot"></span> Erstelle die erste Anzeige über „Erste Anzeige
+                        erstellen“.
                       </span>
                     </div>
                   </div>
@@ -229,11 +197,10 @@ export default async function Home({
             </div>
 
             <div className="card-footer-link">
-              <span>➡ Nächster Schritt: Filter für Biete/Suche/Tausch</span>
+              <span>➡ Nächster Schritt: echte Filter & Detailseiten</span>
             </div>
           </section>
 
-          {/* COMMUNITY */}
           <section className="card" id="community">
             <div className="card-header">
               <div className="card-title">Community-Signal</div>
@@ -326,3 +293,4 @@ export default async function Home({
     </div>
   );
 }
+
