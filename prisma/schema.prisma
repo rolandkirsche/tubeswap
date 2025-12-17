@@ -1,0 +1,41 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ListingKind {
+  OFFER
+  SEARCH
+  TRADE
+}
+
+enum ListingCategory {
+  POWER_TUBES
+  PREAMP_TUBES
+  GUITAR_AMPS
+  HIFI_AMPS
+  OTHER
+}
+
+model Listing {
+  id        String          @id @default(cuid())
+  kind      ListingKind
+  category  ListingCategory
+
+  title     String
+  brand     String?
+  details   String?
+  emission  String?
+  status    String?
+  location  String?
+  zip       String?
+  condition String?
+
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
